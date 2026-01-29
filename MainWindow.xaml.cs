@@ -29,118 +29,13 @@ namespace JournalProject
             InitializeComponent();
         }
 
-        public class Article
-        {
-            public int ArticleId { get; set; }
-            public string ArticleTitle { get; set; }
-            public int PageStart { get; set; }
-            public int PageEnd { get; set; }
-            public int JournalId { get; set; }
-        }
-
-        public class Journal
-        {
-            public int JournalId { get; set; }
-            public int JournalNumber { get; set; }
-            public int PublicationYear { get; set; }
-        }
-
-        public class Author
-        {
-            public int AuthorId { get; set; }
-            public string FirstName { get; set; }
-            public string LastName { get; set; }
-        }
-
-        public class ArticleEventArgs : EventArgs
-        {
-            public int ArticleId { get; set; }
-            public string ArticleTitle { get; set; }
-            public int PageStart { get; set; }
-            public int PageEnd { get; set; }
-            public int JournalId { get; set; }
-            public ArticleEventArgs(int articleId, string articleTitle, int pageStart, int pageEnd, int journalId)
-            {
-                articleId = ArticleId;
-                articleTitle = ArticleTitle;
-                pageStart = PageStart;
-                pageEnd = PageEnd;
-                journalId = JournalId;
-            }
-        }
-
-        public class ObservableArticle
-        {
-            public Article Article { get; set; }
-            public Boolean Selected { get; set; }
-
-            public event EventHandler<ArticleEventArgs> ArticleChanged;
-
-            public void UpdateArticle(int articleId, string articleTitle, int pageStart, int pageEnd, int journalId)
-            {
-                Selected = true;
-                Article.ArticleId = articleId;
-                Article.ArticleTitle = articleTitle;
-                Article.PageStart = pageStart;
-                Article.PageEnd = pageEnd;
-                Article.JournalId = journalId;
-                OnArticleChanged(new ArticleEventArgs(Article.ArticleId, articleTitle, pageStart, pageEnd, journalId));
-            }
-
-            public void UpdateArticle(Article article)
-            {
-                Selected = true;
-                Article = article;
-                OnArticleChanged(new ArticleEventArgs(Article.ArticleId, Article.ArticleTitle, Article.PageStart, Article.PageEnd, Article.JournalId));
-            }
-
-            public void DeselectArticle()
-            {
-                Selected = false;
-                OnArticleChanged(new ArticleEventArgs(0, String.Empty, 0, 0, 0));
-            }
-
-            protected virtual void OnArticleChanged(ArticleEventArgs e)
-            {
-                ArticleChanged?.Invoke(this, e);
-            }
-        }
-
-        public class refreshEventArgs : EventArgs
-        {
-            public string refreshTable { get; set; }
-            public Boolean refreshNeeded { get; set; }
-            public refreshEventArgs(string refreshTable, bool refreshNeeded)
-            {
-                this.refreshTable = refreshTable;
-                this.refreshNeeded = refreshNeeded;
-            }
-        }
-
-        public class refreshObservable
-        {
-            public Boolean refreshNeeded { get; set; }
-            public string TableName { get; set; }
-
-            public event EventHandler<refreshEventArgs> RefreshRequested;
-            public void RequestRefresh(string table)
-            {
-                refreshNeeded = true;
-                OnRefreshRequested(new refreshEventArgs(table, refreshNeeded));
-            }
-            public void RefreshComplete()
-            {
-                refreshNeeded = false;
-            }
-            protected virtual void OnRefreshRequested(refreshEventArgs e)
-            {
-                RefreshRequested?.Invoke(this, e);
-            }
-        }
-
         public ObservableArticle CurrentArticle = new ObservableArticle
         {
             Article = new Article()
+        };
+        public ObservableAuthor CurrentAuthor = new ObservableAuthor
+        {
+            Author = new Author()
         };
 
         public refreshObservable refreshNotifier = new refreshObservable();
@@ -206,14 +101,13 @@ namespace JournalProject
                         }
                     });
                     
-                    
-                    authorsArticles.ItemsSource = dt.DefaultView;
+                    //authorsArticles.ItemsSource = dt.DefaultView;
                     authorsArticles.AutoGenerateColumns = false;
                     authorsArticles.Columns.Add(new DataGridTextColumn
                     {
                         Header = "Article Title",
                         Binding = new Binding("article_title"),
-                        Width = 300,
+                        Width = 370,
                         ElementStyle = new Style(typeof(TextBlock))
                         {
                             Setters =
@@ -221,6 +115,11 @@ namespace JournalProject
                                 new Setter(TextBlock.TextTrimmingProperty, TextTrimming.CharacterEllipsis)
                             }
                         }
+                    });
+                    authorsArticles.Columns.Add(new DataGridTextColumn
+                    {
+                        Header = "Number",
+                        Binding = new Binding("journal_number")
                     });
                     authorsArticles.Columns.Add(new DataGridTextColumn
                     {
@@ -253,7 +152,21 @@ namespace JournalProject
                     SqlDataAdapter sda4 = new SqlDataAdapter(command4);
                     DataTable dt4 = new DataTable("authors");
                     sda4.Fill(dt4);
-                    dataGrid2.ItemsSource = dt4.DefaultView;
+                    
+                    allAuthorsDatagrid.ItemsSource = dt4.DefaultView;
+                    allAuthorsDatagrid.AutoGenerateColumns = false;
+                    allAuthorsDatagrid.Columns.Add(new DataGridTextColumn
+                    {
+                        Header = "First Name",
+                        Binding = new Binding("first_name"),
+                        Width = 150
+                    });
+                    allAuthorsDatagrid.Columns.Add(new DataGridTextColumn
+                    {
+                        Header = "Last Name",
+                        Binding = new Binding("last_name"),
+                        Width = 150
+                    });
 
                     var authorComboboxDict = new Dictionary<int, string>();
                     foreach (DataRow row in dt4.Rows)
@@ -284,7 +197,6 @@ namespace JournalProject
                                     refreshSda.Fill(refreshDt);
                                     refreshDt.Columns.Add("PageRange", typeof(string), "page_start+ ' - ' +page_end");
                                     AllArticlesDataGrid.ItemsSource = refreshDt.DefaultView;
-                                    authorsArticles.ItemsSource = refreshDt.DefaultView;
 
                                     refreshNotifier.RefreshComplete();
                                 }
@@ -293,6 +205,37 @@ namespace JournalProject
                                     MessageBox.Show("Error refreshing articles: " + ex.Message);
                                 }
                             }
+                        }
+                        else if (args.refreshTable == "authors" && args.refreshNeeded)
+                        {
+                            using (SqlConnection refreshConnection = new SqlConnection(connectionString))
+                            {
+                                try
+                                {
+                                    CurrentAuthor.DeselectAuthor();
+                                    refreshConnection.Open();
+                                    string refreshSql = "SELECT * FROM authors";
+                                    SqlCommand refreshCommand = new SqlCommand(refreshSql, refreshConnection);
+                                    SqlDataAdapter refreshSda = new SqlDataAdapter(refreshCommand);
+                                    DataTable refreshDt = new DataTable("authors");
+                                    refreshSda.Fill(refreshDt);
+                                    allAuthorsDatagrid.ItemsSource = refreshDt.DefaultView;
+                                    authorComboboxDict.Clear();
+                                    AuthorsCombobox.ItemsSource = null;
+                                    foreach (DataRow row in refreshDt.Rows)
+                                    {
+                                        authorComboboxDict.Add(Convert.ToInt32(row["author_id"]), row["first_name"] + " " + row["last_name"]);
+                                    }
+                                    AuthorsCombobox.ItemsSource = authorComboboxDict;
+
+                                    refreshNotifier.RefreshComplete();
+                                }
+                                catch (Exception ex)
+                                {
+                                    MessageBox.Show("Error refreshing authors: " + ex.Message);
+                                }
+                            }
+
                         }
                     };
 
@@ -339,6 +282,53 @@ namespace JournalProject
                             ArAuSda.Fill(ArAuDt);
                             articleAuthors.ItemsSource = ArAuDt.DefaultView;
                         }
+                    };
+
+                    CurrentAuthor.AuthorChanged += (s, args) =>
+                    {
+                        if (!CurrentAuthor.Selected)
+                        {
+                            EditAuthorPanel.Visibility = Visibility.Collapsed;
+                            CreateNewAuthorPanel.Visibility = Visibility.Visible;
+                        }
+                        else
+                        {
+                            EditAuthorPanel.Visibility = Visibility.Visible;
+                            CreateNewAuthorPanel.Visibility = Visibility.Collapsed;
+                        }
+
+                        authorFirstNameTextbox.Text = CurrentAuthor.Author.FirstName;
+                        authorLastNameTextbox.Text = CurrentAuthor.Author.LastName;
+
+                        if (CurrentAuthor.Author.AuthorId == 0)
+                        {
+                            AuthorEditButton.Visibility = Visibility.Collapsed;
+                            AuthorDeleteButton.Visibility = Visibility.Collapsed;
+                            AuthorCreateButton.Content = "Create";
+                            authorsArticles.ItemsSource = null;
+                            return;
+                        }
+                        else
+                        {
+                            AuthorEditButton.Visibility = Visibility.Visible;
+                            AuthorDeleteButton.Visibility = Visibility.Visible;
+                            AuthorCreateButton.Content = "Add new";
+                        }
+
+                        using (SqlConnection AuArConnection = new SqlConnection(connectionString))
+                        {
+                            AuArConnection.Open();
+                            string articlesOfAuthorSql = "SELECT * FROM articles WHERE article_id IN (SELECT article_id FROM article_authors WHERE author_id = @author_id)";
+                            SqlCommand articlesOfAuthor = new SqlCommand(articlesOfAuthorSql, AuArConnection);
+                            SqlDataAdapter AuArSda = new SqlDataAdapter(articlesOfAuthor);
+                            articlesOfAuthor.Parameters.AddWithValue("@author_id", CurrentAuthor.Author.AuthorId);
+                            DataTable AuArDt = new DataTable("articles");
+                            AuArSda.FillSchema(AuArDt, SchemaType.Source);
+                            AuArSda.Fill(AuArDt);
+                            AuArDt.Columns.Add("PageRange", typeof(string), "page_start+ ' - ' +page_end");
+                            authorsArticles.ItemsSource = AuArDt.DefaultView;
+                        }
+
                     };
                 }
                 catch (Exception ex)
@@ -467,6 +457,102 @@ namespace JournalProject
         private void ArticleRefreshButton_Click(object sender, RoutedEventArgs e)
         {
             refreshNotifier.RequestRefresh("articles");
+        }
+
+        private void dataGrid2_SelectedCellsChanged(object sender, SelectedCellsChangedEventArgs e)
+        {
+            DataRowView selectedRow = (DataRowView)allAuthorsDatagrid.SelectedItem;
+
+            if (selectedRow != null) {
+                CurrentAuthor.UpdateAuthor(
+                    Convert.ToInt32(selectedRow["author_id"]),
+                    selectedRow["first_name"].ToString(),
+                    selectedRow["last_name"].ToString()
+                );
+            }
+        }
+
+        private void CreateNewAuthorButton_Click(object sender, RoutedEventArgs e)
+        {
+            CurrentAuthor.UpdateAuthor(0, String.Empty, String.Empty);
+        }
+
+        private void AuthorCancelButton_Click(object sender, RoutedEventArgs e)
+        {
+            CurrentAuthor.DeselectAuthor();
+        }
+
+        private void AuthorDeleteButton_Click(object sender, RoutedEventArgs e)
+        {
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                try
+                {
+                    MessageBoxResult result = MessageBox.Show("Are you sure you want to delete the author \"" + CurrentAuthor.Author.FirstName + " " + CurrentAuthor.Author.LastName + "\"?", "Confirm Deletion", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                    if (result != MessageBoxResult.Yes)
+                    {
+                        return;
+                    }
+                    connection.Open();
+                    string sql = "DELETE FROM authors WHERE author_id=@author_id";
+                    SqlCommand command = new SqlCommand(sql, connection);
+                    command.Parameters.AddWithValue("@author_id", CurrentAuthor.Author.AuthorId);
+                    command.ExecuteNonQuery();
+                    refreshNotifier.RequestRefresh("authors");
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error deleting author: " + ex.Message);
+                }
+            }
+        }
+
+        private void AuthorEditButton_Click(object sender, RoutedEventArgs e)
+        {
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                try
+                {
+                    connection.Open();
+                    string sql = "UPDATE authors SET first_name=@first_name, last_name=@last_name WHERE author_id=@author_id";
+                    SqlCommand command = new SqlCommand(sql, connection);
+                    command.Parameters.AddWithValue("@first_name", authorFirstNameTextbox.Text);
+                    command.Parameters.AddWithValue("@last_name", authorLastNameTextbox.Text);
+                    command.Parameters.AddWithValue("@author_id", CurrentAuthor.Author.AuthorId);
+                    command.ExecuteNonQuery();
+                    refreshNotifier.RequestRefresh("authors");
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error editing author: " + ex.Message);
+                }
+            }
+        }
+
+        private void AuthorCreateButton_Click(object sender, RoutedEventArgs e)
+        {
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                try
+                {
+                    connection.Open();
+                    string sql = "INSERT INTO authors (first_name, last_name) VALUES (@first_name, @last_name)";
+                    SqlCommand command = new SqlCommand(sql, connection);
+                    command.Parameters.AddWithValue("@first_name", authorFirstNameTextbox.Text);
+                    command.Parameters.AddWithValue("@last_name", authorLastNameTextbox.Text);
+                    command.ExecuteNonQuery();
+                    refreshNotifier.RequestRefresh("authors");
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error creating author: " + ex.Message);
+                }
+            }
+        }
+
+        private void AuthorRefreshButton_Click(object sender, RoutedEventArgs e)
+        {
+            refreshNotifier.RequestRefresh("authors");
         }
     }
 }
