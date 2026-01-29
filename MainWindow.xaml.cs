@@ -106,10 +106,44 @@ namespace JournalProject
             }
         }
 
+        public class refreshEventArgs : EventArgs
+        {
+            public string refreshTable { get; set; }
+            public Boolean refreshNeeded { get; set; }
+            public refreshEventArgs(string refreshTable, bool refreshNeeded)
+            {
+                this.refreshTable = refreshTable;
+                this.refreshNeeded = refreshNeeded;
+            }
+        }
+
+        public class refreshObservable
+        {
+            public Boolean refreshNeeded { get; set; }
+            public string TableName { get; set; }
+
+            public event EventHandler<refreshEventArgs> RefreshRequested;
+            public void RequestRefresh(string table)
+            {
+                refreshNeeded = true;
+                OnRefreshRequested(new refreshEventArgs(table, refreshNeeded));
+            }
+            public void RefreshComplete()
+            {
+                refreshNeeded = false;
+            }
+            protected virtual void OnRefreshRequested(refreshEventArgs e)
+            {
+                RefreshRequested?.Invoke(this, e);
+            }
+        }
+
         public ObservableArticle CurrentArticle = new ObservableArticle
         {
             Article = new Article()
         };
+
+        public refreshObservable refreshNotifier = new refreshObservable();
 
         string connectionString = ConfigurationManager.ConnectionStrings["JournalDB"].ConnectionString;
 
@@ -230,6 +264,38 @@ namespace JournalProject
                     AuthorsCombobox.DisplayMemberPath = "Value";
                     AuthorsCombobox.SelectedValuePath = "Key";
 
+                    refreshNotifier.refreshNeeded = false;
+
+                    refreshNotifier.RefreshRequested += (s, args) =>
+                    {
+                        if (args.refreshTable == "articles" && args.refreshNeeded)
+                        {
+                            using (SqlConnection refreshConnection = new SqlConnection(connectionString))
+                            {
+                                try
+                                {
+                                    CurrentArticle.DeselectArticle();
+
+                                    refreshConnection.Open();
+                                    string refreshSql = "SELECT * FROM articles INNER JOIN journals ON articles.journal_id = journals.journal_id";
+                                    SqlCommand refreshCommand = new SqlCommand(refreshSql, refreshConnection);
+                                    SqlDataAdapter refreshSda = new SqlDataAdapter(refreshCommand);
+                                    DataTable refreshDt = new DataTable("articles");
+                                    refreshSda.Fill(refreshDt);
+                                    refreshDt.Columns.Add("PageRange", typeof(string), "page_start+ ' - ' +page_end");
+                                    AllArticlesDataGrid.ItemsSource = refreshDt.DefaultView;
+                                    authorsArticles.ItemsSource = refreshDt.DefaultView;
+
+                                    refreshNotifier.RefreshComplete();
+                                }
+                                catch (Exception ex)
+                                {
+                                    MessageBox.Show("Error refreshing articles: " + ex.Message);
+                                }
+                            }
+                        }
+                    };
+
                     CurrentArticle.ArticleChanged += (s, args) =>
                     {
                         if (!CurrentArticle.Selected)
@@ -291,13 +357,16 @@ namespace JournalProject
         {
             DataRowView selectedRow = (DataRowView)AllArticlesDataGrid.SelectedItem;
 
-            CurrentArticle.UpdateArticle(
-                Convert.ToInt32(selectedRow["article_id"]),
-                selectedRow["article_title"].ToString(),
-                Convert.ToInt32(selectedRow["page_start"]),
-                Convert.ToInt32(selectedRow["page_end"]),
-                Convert.ToInt32(selectedRow["journal_id"])
-            );
+            if (selectedRow != null) {
+                CurrentArticle.UpdateArticle(
+                    Convert.ToInt32(selectedRow["article_id"]),
+                    selectedRow["article_title"].ToString(),
+                    Convert.ToInt32(selectedRow["page_start"]),
+                    Convert.ToInt32(selectedRow["page_end"]),
+                    Convert.ToInt32(selectedRow["journal_id"])
+                );
+            }
+
         }
 
         private void CreateNewArticleButton_Click(object sender, RoutedEventArgs e)
@@ -324,6 +393,8 @@ namespace JournalProject
                     command.Parameters.AddWithValue("@page_end", Convert.ToInt32(ArticlePageEnd.Text));
                     command.Parameters.AddWithValue("@journal_id", Convert.ToInt32(JournalsCombobox.SelectedValue));
                     command.ExecuteNonQuery();
+
+                    refreshNotifier.RequestRefresh("articles");
                 }
                 catch (Exception ex)
                 {
@@ -347,6 +418,8 @@ namespace JournalProject
                     command.Parameters.AddWithValue("@journal_id", Convert.ToInt32(JournalsCombobox.SelectedValue));
                     command.Parameters.AddWithValue("@article_id", CurrentArticle.Article.ArticleId);
                     command.ExecuteNonQuery();
+
+                    refreshNotifier.RequestRefresh("articles");
                 }
                 catch (Exception ex)
                 {
@@ -371,6 +444,8 @@ namespace JournalProject
                     SqlCommand command = new SqlCommand(sql, connection);
                     command.Parameters.AddWithValue("@article_id", CurrentArticle.Article.ArticleId);
                     command.ExecuteNonQuery();
+
+                    refreshNotifier.RequestRefresh("articles");
                 }
                 catch (Exception ex)
                 {
@@ -387,6 +462,11 @@ namespace JournalProject
                 var pair = (KeyValuePair<int, string>)item;
                 return pair.Value.ToLower().Contains(searchText);
             };
+        }
+
+        private void ArticleRefreshButton_Click(object sender, RoutedEventArgs e)
+        {
+            refreshNotifier.RequestRefresh("articles");
         }
     }
 }
