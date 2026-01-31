@@ -59,6 +59,19 @@ namespace JournalProject
         }
     }
 
+    public class JournalEventArgs : EventArgs
+    {
+        public int JournalId { get; set; }
+        public int JournalNumber { get; set; }
+        public int PublicationYear { get; set; }
+        public JournalEventArgs(int journalId, int journalNumber, int publicationYear)
+        {
+            journalId = JournalId;
+            journalNumber = JournalNumber;
+            publicationYear = PublicationYear;
+        }
+    }
+
     public class ObservableArticle
     {
         public Article Article { get; set; }
@@ -123,6 +136,34 @@ namespace JournalProject
         protected virtual void OnAuthorChanged(AuthorEventArgs e)
         {
             AuthorChanged?.Invoke(this, e);
+        }
+    }
+
+    public class ObservableJournal
+    {
+        public Journal Journal { get; set; }
+        public Boolean Selected { get; set; }
+
+        public event EventHandler<JournalEventArgs> JournalChanged;
+
+        public void UpdateJournal(int journalId, int journalNumber, int publicationYear)
+        {
+            Selected = true;
+            Journal.JournalId = journalId;
+            Journal.JournalNumber = journalNumber;
+            Journal.PublicationYear = publicationYear;
+            OnJournalChanged(new JournalEventArgs(Journal.JournalId, journalNumber, publicationYear));
+        }
+
+        public void DeselectJournal()
+        {
+            Selected = false;
+            OnJournalChanged(new JournalEventArgs(0, 0, 0));
+        }
+
+        protected virtual void OnJournalChanged(JournalEventArgs e)
+        {
+            JournalChanged?.Invoke(this, e);
         }
     }
 
