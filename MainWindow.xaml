@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:JournalProject"
         mc:Ignorable="d"
         Title="MainWindow" Height="720" Width="1280" Loaded="Window_Loaded">
-    <Grid Background="LightGray">
+    <Grid Background="White">
         <TabControl >
             <TabItem Header="Articles">
                 <Grid>
@@ -18,14 +18,14 @@
                     </Grid.ColumnDefinitions>
                     <DockPanel Grid.ColumnSpan="3">
                         <DockPanel DockPanel.Dock="Top" Margin="0,2,0,2">
-                            <Button x:Name="ArticleRefreshButton" Content="Refresh" DockPanel.Dock="Left" Margin="0,0,5,0" Padding="3,1,3,1" Click="ArticleRefreshButton_Click"/>
-                            <Button x:Name="ArticleSearchButton" Content="Search" DockPanel.Dock="Right" Margin="5,0,0,0" Padding="3,1,3,1"/>
-                            <TextBox AcceptsReturn="False" HorizontalAlignment="Stretch" Padding="3,2,3,2"/>
+                            <Button x:Name="ArticleRefreshButton" Content="Refresh" DockPanel.Dock="Left" Margin="0,0,5,0" FontWeight="DemiBold" Padding="3,1,3,1" Click="ArticleRefreshButton_Click"/>
+                            <Button x:Name="ArticleSearchButton" Content="Search" DockPanel.Dock="Right" Margin="5,0,0,0" FontWeight="DemiBold" Padding="3,1,3,1" Click="ArticleSearchButton_Click"/>
+                            <TextBox x:Name="ArticleSearchTextbox" AcceptsReturn="False" HorizontalAlignment="Stretch" Padding="3,2,3,2"/>
                         </DockPanel>
-                        <DataGrid x:Name="AllArticlesDataGrid" AutoGenerateColumns="True" SelectedCellsChanged="ArticleSelected" SelectionUnit="FullRow" IsReadOnly="True" SelectionMode="Single" CanUserAddRows="False"/>
+                        <DataGrid x:Name="AllArticlesDataGrid" AutoGenerateColumns="True" SelectedCellsChanged="ArticleSelected" SelectionUnit="FullRow" IsReadOnly="True" SelectionMode="Single" CanUserAddRows="False" VerticalGridLinesBrush="#FFF1F1F1" Background="White"/>
                     </DockPanel>
                     <Grid Grid.Column="3" x:Name="CreateNewArticlePanel">
-                        <Button x:Name="CreateNewArticleButton" Width="150" Height="40" FontWeight="Bold" Click="CreateNewArticleButton_Click">
+                        <Button x:Name="CreateNewArticleButton" Width="150" Height="40" FontWeight="Bold" Click="CreateNewArticleButton_Click" FontSize="15">
                             Create new article
                         </Button>
                     </Grid>
@@ -43,16 +43,16 @@
                                     </Style.Resources>
                                 </Style>
                             </WrapPanel.Resources>
-                            <Button x:Name="ArticleCreateButton" Click="ArticleCreateButton_Click">
+                            <Button x:Name="ArticleCreateButton" Click="ArticleCreateButton_Click" Background="#FFD9F99D" FontWeight="DemiBold">
                                 Add new
                             </Button>
-                            <Button x:Name="ArticleEditButton" Click="ArticleEditButton_Click">
+                            <Button x:Name="ArticleEditButton" Click="ArticleEditButton_Click" Background="#FFfef08a" FontWeight="DemiBold">
                                 Confirm edit
                             </Button>
-                            <Button x:Name="ArticleDeleteButton" Click="ArticleDeleteButton_Click">
+                            <Button x:Name="ArticleDeleteButton" Click="ArticleDeleteButton_Click" Background="#FFf87171" FontWeight="DemiBold">
                                 Delete
                             </Button>
-                            <Button x:Name="ArticleCancelButton" Click="ArticleCancelButton_Click">
+                            <Button x:Name="ArticleCancelButton" Click="ArticleCancelButton_Click" FontWeight="DemiBold">
                                 Cancel
                             </Button>
                         </WrapPanel>
@@ -115,7 +115,7 @@
                                         <DataGridTemplateColumn>
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <Button>
+                                                    <Button Click="Button_Click" >
                                                         Remove
                                                     </Button>
                                                 </DataTemplate>
@@ -130,7 +130,7 @@
                                     </Grid.ColumnDefinitions>
                                     <ComboBox x:Name="AuthorsCombobox" IsEditable="True" IsTextSearchEnabled="True" Margin="0,5,0,0" Padding="3,2,3,2" TextInput="AuthorsCombobox_TextInput">
                                     </ComboBox>
-                                    <Button Grid.Column="1" Margin="10,5,0,0">
+                                    <Button x:Name="AuthorAddButton" Grid.Column="1" Margin="10,5,0,0" Click="AuthorAddButton_Click">
                                         Add
                                     </Button>
                                 </Grid>
@@ -148,14 +148,14 @@
                     </Grid.ColumnDefinitions>
                     <DockPanel Grid.ColumnSpan="2">
                         <DockPanel DockPanel.Dock="Top" Margin="0,2,0,2">
-                            <Button x:Name="AuthorRefreshButton" Content="Refresh" DockPanel.Dock="Left" Margin="0,0,5,0" Padding="3,1,3,1" Click="AuthorRefreshButton_Click"/>
-                            <Button x:Name="AuthorSearchButton" Content="Search" DockPanel.Dock="Right" Margin="5,0,0,0" Padding="3,1,3,1"/>
-                            <TextBox AcceptsReturn="False" HorizontalAlignment="Stretch" Padding="3,2,3,2"/>
+                            <Button x:Name="AuthorRefreshButton" Content="Refresh" DockPanel.Dock="Left" Margin="0,0,5,0" Padding="3,1,3,1" FontWeight="DemiBold" Click="AuthorRefreshButton_Click"/>
+                            <Button x:Name="AuthorSearchButton" Content="Search" DockPanel.Dock="Right" Margin="5,0,0,0" Padding="3,1,3,1" FontWeight="DemiBold" Click="AuthorSearchButton_Click"/>
+                            <TextBox x:Name="AuthorSearchTextbox" AcceptsReturn="False" HorizontalAlignment="Stretch" Padding="3,2,3,2"/>
                         </DockPanel>
-                        <DataGrid x:Name="allAuthorsDatagrid" AutoGenerateColumns="True" SelectedCellsChanged="dataGrid2_SelectedCellsChanged" SelectionUnit="FullRow" IsReadOnly="True" SelectionMode="Single" CanUserAddRows="False"/>
+                        <DataGrid x:Name="allAuthorsDatagrid" AutoGenerateColumns="True" SelectedCellsChanged="dataGrid2_SelectedCellsChanged" SelectionUnit="FullRow" IsReadOnly="True" SelectionMode="Single" CanUserAddRows="False" VerticalGridLinesBrush="#FFF1F1F1" Background="White"/>
                     </DockPanel>
                     <Grid Grid.Column="1" x:Name="CreateNewAuthorPanel" Grid.ColumnSpan="2" Margin="731,0,0,0">
-                        <Button x:Name="CreateNewAuthorButton" Width="150" Height="40" FontWeight="Bold" Click="CreateNewAuthorButton_Click">
+                        <Button x:Name="CreateNewAuthorButton" Width="150" Height="40" FontWeight="Bold" Click="CreateNewAuthorButton_Click" FontSize="15">
                             Add new author
                         </Button>
                     </Grid>
@@ -173,16 +173,16 @@
                                     </Style.Resources>
                                 </Style>
                             </WrapPanel.Resources>
-                            <Button x:Name="AuthorCreateButton" Click="AuthorCreateButton_Click">
+                            <Button x:Name="AuthorCreateButton" Click="AuthorCreateButton_Click" Background="#FFD9F99D" FontWeight="DemiBold">
                                 Add new
                             </Button>
-                            <Button x:Name="AuthorEditButton" Click="AuthorEditButton_Click">
+                            <Button x:Name="AuthorEditButton" Click="AuthorEditButton_Click" Background="#FFfef08a" FontWeight="DemiBold">
                                 Confirm edit
                             </Button>
-                            <Button x:Name="AuthorDeleteButton" Click="AuthorDeleteButton_Click">
+                            <Button x:Name="AuthorDeleteButton" Click="AuthorDeleteButton_Click" Background="#FFf87171" FontWeight="DemiBold">
                                 Delete
                             </Button>
-                            <Button x:Name="AuthorCancelButton" Click="AuthorCancelButton_Click">
+                            <Button x:Name="AuthorCancelButton" Click="AuthorCancelButton_Click" FontWeight="DemiBold">
                                 Cancel
                             </Button>
                         </WrapPanel>
@@ -231,9 +231,9 @@
                             <RowDefinition Height="1*"/>
                             <RowDefinition Height="1*"/>
                         </Grid.RowDefinitions>
-                        <DataGrid x:Name="journalDataGrid" AutoGenerateColumns="False" SelectionUnit="FullRow" IsReadOnly="True" SelectionMode="Single" CanUserAddRows="False" SelectedCellsChanged="journalDataGrid_SelectedCellsChanged" />
+                        <DataGrid x:Name="journalDataGrid" AutoGenerateColumns="False" SelectionUnit="FullRow" IsReadOnly="True" SelectionMode="Single" CanUserAddRows="False" SelectedCellsChanged="journalDataGrid_SelectedCellsChanged" VerticalGridLinesBrush="#FFF1F1F1" Background="White"/>
                         <Grid Grid.Row="1" x:Name="CreateNewJournalPanel" >
-                            <Button Width="150" Height="40" FontWeight="Bold" x:Name="CreateNewJournalButton" Click="CreateNewJournalButton_Click">Add new journal</Button>
+                            <Button Width="150" Height="40" FontWeight="Bold" x:Name="CreateNewJournalButton" Click="CreateNewJournalButton_Click" FontSize="15">Add new journal</Button>
                         </Grid>
                         <DockPanel x:Name="EditJournalPanel" Visibility="Collapsed" Grid.Row="1">
                             <WrapPanel DockPanel.Dock="Bottom" HorizontalAlignment="Center" Margin="0, 10">
@@ -249,16 +249,16 @@
                                         </Style.Resources>
                                     </Style>
                                 </WrapPanel.Resources>
-                                <Button x:Name="JournalCreateButton" Click="JournalCreateButton_Click">
+                                <Button x:Name="JournalCreateButton" Click="JournalCreateButton_Click" Background="#FFD9F99D" FontWeight="DemiBold">
                                     Add new
                                 </Button>
-                                <Button x:Name="JournalEditButton" Click="JournalEditButton_Click">
+                                <Button x:Name="JournalEditButton" Click="JournalEditButton_Click" Background="#FFfef08a" FontWeight="DemiBold">
                                     Confirm edit
                                 </Button>
-                                <Button x:Name="JournalDeleteButton" Click="JournalDeleteButton_Click">
+                                <Button x:Name="JournalDeleteButton" Click="JournalDeleteButton_Click" Background="#FFf87171" FontWeight="DemiBold">
                                     Delete
                                 </Button>
-                                <Button x:Name="JournalCancelButton" Click="JournalCancelButton_Click">
+                                <Button x:Name="JournalCancelButton" Click="JournalCancelButton_Click" FontWeight="DemiBold">
                                     Cancel
                                 </Button>
                             </WrapPanel>
@@ -291,10 +291,10 @@
                     </Grid>
                     <DockPanel Grid.Column="1">
                         <DockPanel DockPanel.Dock="Bottom" Margin="0, 5">
-                            <Button x:Name="JournalRefreshButton" Content="Refresh" Margin="0,0,5,0" Padding="4,2,4,2" DockPanel.Dock="Right" Click="JournalRefreshButton_Click"/>
+                            <Button x:Name="JournalRefreshButton" Content="Refresh" Margin="0,0,5,0" Padding="4,2,4,2" DockPanel.Dock="Right" Click="JournalRefreshButton_Click" FontWeight="DemiBold"/>
                             <Border></Border>
                         </DockPanel>
-                        <DataGrid x:Name="issueDataGrid" Grid.Column="1" AutoGenerateColumns="False" SelectionUnit="FullRow" IsReadOnly="True" SelectionMode="Single" CanUserAddRows="False" CanUserSortColumns="False"/>
+                        <DataGrid x:Name="issueDataGrid" Grid.Column="1" AutoGenerateColumns="False" SelectionUnit="FullRow" IsReadOnly="True" SelectionMode="Single" CanUserAddRows="False" CanUserSortColumns="False" VerticalGridLinesBrush="#FFF1F1F1" Background="White"/>
                     </DockPanel>
                 </Grid>
             </TabItem>
