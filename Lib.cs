@@ -9,7 +9,6 @@ namespace JournalProject
     public static class SQLQueries
     {
         public const string ALL_ARTICLES = "SELECT * FROM articles INNER JOIN journals ON articles.journal_id = journals.journal_id INNER JOIN article_authors ON articles.article_id = article_authors.article_id INNER JOIN authors ON article_authors.author_id = authors.author_id where article_authors.author_order=1";
-        //public const string ALL_ARTICLES = "SELECT * FROM articles INNER JOIN journals ON articles.journal_id = journals.journal_id";
         public const string ALL_JOURNALS = "SELECT * FROM journals";
         public const string ALL_AUTHORS = "SELECT * FROM authors";
 

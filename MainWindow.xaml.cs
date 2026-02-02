@@ -75,7 +75,7 @@ namespace JournalProject
                     {
                         Header = "Article Title",
                         Binding = new Binding("article_title"),
-                        Width = 433,
+                        Width = 430,
                         ElementStyle = new Style(typeof(TextBlock))
                         {
                             Setters =
@@ -117,7 +117,7 @@ namespace JournalProject
                     {
                         Header = "Author",
                         Binding = new Binding("AuthorFullName"),
-                        Width = 200,
+                        Width = 185,
                         ElementStyle = new Style(typeof(TextBlock))
                         {
                             Setters =
@@ -173,12 +173,30 @@ namespace JournalProject
                     journalDataGrid.Columns.Add(new DataGridTextColumn
                     {
                         Header = "Journal Number",
+                        Width = 150,
                         Binding = new Binding("journal_number"),
+                        ElementStyle = new Style(typeof(TextBlock))
+                        {
+                            Setters =
+                            {
+                                new Setter(TextBlock.PaddingProperty, new Thickness(3)),
+                                new Setter(TextBlock.TextAlignmentProperty, TextAlignment.Center)
+                            }
+                        }
                     });
                     journalDataGrid.Columns.Add(new DataGridTextColumn
                     {
                         Header = "Publication Year",
+                        Width = 150,
                         Binding = new Binding("publication_year"),
+                        ElementStyle = new Style(typeof(TextBlock))
+                        {
+                            Setters =
+                            {
+                                new Setter(TextBlock.PaddingProperty, new Thickness(3)),
+                                new Setter(TextBlock.TextAlignmentProperty, TextAlignment.Center)
+                            }
+                        }
                     });
 
                     JournalsCombobox.ItemsSource = dt2.DefaultView;
@@ -228,7 +246,7 @@ namespace JournalProject
                     {
                         Header = "First Name",
                         Binding = new Binding("first_name"),
-                        Width = 150,
+                        Width = 250,
                         ElementStyle = new Style(typeof(TextBlock))
                         {
                             Setters =
@@ -242,7 +260,7 @@ namespace JournalProject
                     {
                         Header = "Last Name",
                         Binding = new Binding("last_name"),
-                        Width = 150,
+                        Width = 480,
                         ElementStyle = new Style(typeof(TextBlock))
                         {
                             Setters =
@@ -615,6 +633,7 @@ namespace JournalProject
                         authorListChanged = true;
                         break;
                     }
+                    count++;
                 }
             }
 
@@ -626,7 +645,6 @@ namespace JournalProject
                 !authorListChanged
                )
             {
-                MessageBox.Show("No changes detected.");
                 return;
             }
 
